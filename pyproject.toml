@@ -8,7 +8,9 @@ authors = [
 ]
 license = { text = "MIT" }
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pytransitions>=0.9.2",
+]
 keywords = ["yahtzee", "dice", "game"]  # help with discovery
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -18,9 +20,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/yahtz"
-Repository = "https://github.com/yourusername/yahtz"
-Issues = "https://github.com/yourusername/yahtz/issues"
+Homepage = "https://github.com/rogerhurwitz/yahtz"
+Repository = "https://github.com/rogerhurwitz/yahtz"
+Issues = "https://github.com/rogerhurwitz/yahtz/issues"
 
 [project.scripts]
 yahtz = "yahtz:main"
@@ -31,6 +33,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.135.11",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
 ]
