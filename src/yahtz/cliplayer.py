@@ -1,4 +1,6 @@
 # src/yahtz/cliplayer.py
+from tabulate import tabulate
+
 from yahtz.boxes import Box
 from yahtz.dicetypes import DiceRoll
 from yahtz.game import PlayerGameState
@@ -19,9 +21,8 @@ class CLIPlayer:
         dice_to_reroll = []
 
         for roll_count in range(1, 4):
-            print(f"\n--- Roll {roll_count} ---")
             roll = state.dice_cup.roll_dice(reroll_indices=dice_to_reroll)
-            self._display_dice(roll)
+            self._display_dice(roll_count, roll)
 
             # Check if user wants to end turn or continue rolling
             if roll_count < 3:
@@ -33,31 +34,27 @@ class CLIPlayer:
 
     def _display_scorecard(self, state: PlayerGameState) -> None:
         """Display current scorecard state."""
-        print("\n=== SCORECARD ===")
-        print("Upper Section:")
-        for box in Box.get_upper_boxes():
-            score = state.card.box_scores[box]
-            status = str(score) if score is not None else "---"
-            print(f"  {box.name}: {status}")
 
-        upper_score = sum(
-            state.card.box_scores[box] or 0 for box in Box.get_upper_boxes()
+        def names_and_scores(boxes: list[Box]) -> tuple[list[str], list[str]]:
+            names = [box.name for box in boxes]
+            scores = [str(state.card.box_scores.get(box) or "---") for box in boxes]
+            return names, scores
+
+        upr_names, upr_scores = names_and_scores(Box.get_upper_boxes())
+        upr_names.append("Upr Total")
+        upr_scores.append(
+            str(sum(state.card.box_scores[box] or 0 for box in Box.get_upper_boxes()))
         )
-        print(f"  Upper Total: {upper_score}/63 (bonus at 63)")
+        lwr_names, lwr_scores = names_and_scores(Box.get_lower_boxes())
 
-        print("\nLower Section:")
-        for box in Box.get_lower_boxes():
-            score = state.card.box_scores[box]
-            status = str(score) if score is not None else "---"
-            print(f"  {box.name}: {status}")
+        grid = [upr_names, upr_scores, lwr_names, lwr_scores]
+        print(tabulate(grid, tablefmt="simple_grid"))
+        print(f"Total Score: {state.card.get_card_score()}")
 
-        print(f"\nTotal Score: {state.card.get_card_score()}")
-        print("=" * 17)
-
-    def _display_dice(self, roll: DiceRoll) -> None:
+    def _display_dice(self, roll_count: int, roll: DiceRoll) -> None:
         """Display current dice roll."""
         dice_str = " ".join(f"[{die}]" for die in roll.numbers)
-        print(f"Dice: {dice_str}")
+        print(f"\n--- Roll {roll_count}: {dice_str} ---")
 
     def _should_end_turn(self) -> bool:
         """Ask user if they want to end their turn."""
@@ -72,11 +69,10 @@ class CLIPlayer:
 
     def _get_reroll_choice(self) -> list[int]:
         """Get user's choice of which dice to reroll."""
-        print("Which dice would you like to reroll?")
-        print("Enter dice positions (1-5) separated by spaces, or 'all' to reroll all:")
-
         while True:
-            choice = input("Reroll positions: ").strip().lower()
+            choice = (
+                input("Space separated reroll dice positions (1-5): ").strip().lower()
+            )
 
             if choice == "all":
                 return []

@@ -11,3 +11,6 @@ wheels/
 
 # Development artifacts
 .hypothesis/
+
+# Jupyter Notebooks
+*.ipynb
